@@ -45,10 +45,12 @@ private:
 	CGrTexture m_bunnyTex;
 	CGrTexture m_sphereTex;
 	CGrTexture m_heightTex;
+	CGrTexture m_fishTex;
 	CGrCubeTexture m_cubeTex;
 	CMesh m_bunny;
 	CSphere m_sphere;
-	CSphere m_metallicSphere;
+	CMesh m_cat;
+	CMesh m_fish;
 	CMesh m_skybox;
 };
 

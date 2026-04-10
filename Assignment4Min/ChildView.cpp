@@ -75,10 +75,16 @@ void CChildView::InitGL()
 	m_skybox.m_program = LoadShaders("ShaderWnd/vertexSky.glsl", "ShaderWnd/fragmentSky.glsl");
 	m_skybox.InitGL();
 
-	/* Metalic */
-	m_metallicSphere.SetRadius(3);
-	m_metallicSphere.m_program = LoadShaders("ShaderWnd/vertexSphere2.glsl", "ShaderWnd/fragmentSphere2.glsl");
-	m_metallicSphere.InitGL();
+	/* Metalic Cat */
+	m_cat.LoadOBJ("models\\cat.obj");
+	m_cat.m_program = LoadShaders("ShaderWnd/vertexSphere2.glsl", "ShaderWnd/fragmentSphere2.glsl");
+	m_cat.InitGL();
+
+	/* Fish */
+	m_fishTex.LoadFile(L"models/BLUEGILL.bmp");
+	m_fish.LoadOBJ("models\\fish4.obj");
+	m_fish.m_program = LoadShaders("ShaderWnd/vertex.glsl", "ShaderWnd/fragment.glsl");
+	m_fish.InitGL();
 }
 
 void CChildView::RenderGL()
@@ -161,8 +167,8 @@ void CChildView::RenderGL()
 	glDepthFunc(GL_LEQUAL);
 	m_skybox.RenderGL();
 
-	/* Metalic sphere rendering */
-	m_program = m_metallicSphere.m_program;
+	/* Metalic cat rendering */
+	m_program = m_cat.m_program;
 	glUseProgram(m_program);
 
 	glUniform1i(glGetUniformLocation(m_program, "env_map"), 0);
@@ -176,7 +182,42 @@ void CChildView::RenderGL()
 
 	glUniformMatrix4fv(m_nPVM, 1, GL_FALSE, value_ptr(PVM));
 	glUniformMatrix4fv(m_nVM, 1, GL_FALSE, value_ptr(VM));
-	m_metallicSphere.RenderGL();
+
+	glActiveTexture(GL_TEXTURE0);
+	glBindTexture(GL_TEXTURE_CUBE_MAP, m_cubeTex.TexName());
+
+	m_cat.RenderGL();
+
+	/* Fish rendering */
+	m_program = m_fish.m_program;
+	glUseProgram(m_program);
+
+	glUniform1i(glGetUniformLocation(m_program, "diffuse_mat"), 0);
+	glUniform1i(glGetUniformLocation(m_program, "height_map"), 1);
+
+	m_nPVM = glGetUniformLocation(m_program, "mPVM");
+	m_nVM = glGetUniformLocation(m_program, "mVM");
+
+	// Place fish in front of the cat
+	M = translate(mat4(1.f), vec3(20., 0., 5.)); 
+	// Rotate by the x-axis
+	M = M * rotate(mat4(1.f), 270.f, vec3(1., 0., 0.));
+	VM = m_mVM * M;
+	PVM = m_mPVM * M;
+
+	glUniformMatrix4fv(m_nPVM, 1, GL_FALSE, value_ptr(PVM));
+	glUniformMatrix4fv(m_nVM, 1, GL_FALSE, value_ptr(VM));
+
+	glUniform4fv(glGetUniformLocation(m_program, "AmbientProduct"), 1, value_ptr(ambient_product));
+	glUniform4fv(glGetUniformLocation(m_program, "DiffuseProduct"), 1, value_ptr(diffuse_product));
+	glUniform4fv(glGetUniformLocation(m_program, "SpecularProduct"), 1, value_ptr(specular_product));
+	glUniform4fv(glGetUniformLocation(m_program, "LightPosition"), 1, value_ptr(light_position));
+	glUniform1f(glGetUniformLocation(m_program, "Shininess"), material_shininess);
+
+	glActiveTexture(GL_TEXTURE0);
+	glBindTexture(GL_TEXTURE_2D, m_fishTex.TexName());
+
+	m_fish.RenderGL();
 }
 
 void CChildView::CleanGL()
