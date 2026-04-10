@@ -85,6 +85,11 @@ void CChildView::InitGL()
 	m_fish.LoadOBJ("models\\fish4.obj");
 	m_fish.m_program = LoadShaders("ShaderWnd/vertex.glsl", "ShaderWnd/fragment.glsl");
 	m_fish.InitGL();
+
+	/* Decagonal Prism */
+	m_prism.CreateDecagonalPrism();
+	m_prism.m_program = LoadShaders("ShaderWnd/vertexSphere2.glsl", "ShaderWnd/fragmentSphere2.glsl");
+	m_prism.InitGL();
 }
 
 void CChildView::RenderGL()
@@ -218,6 +223,29 @@ void CChildView::RenderGL()
 	glBindTexture(GL_TEXTURE_2D, m_fishTex.TexName());
 
 	m_fish.RenderGL();
+
+	/* Prism rendering */
+	m_program = m_prism.m_program;
+	glUseProgram(m_program);
+
+	glUniform1i(glGetUniformLocation(m_program, "env_map"), 0);
+
+	m_nPVM = glGetUniformLocation(m_program, "mPVM");
+	m_nVM = glGetUniformLocation(m_program, "mVM");
+
+	// Move it to an empty spot (-20, 0, 0) and scale it up by 3 so it's easily visible
+	M = translate(mat4(1.f), vec3(-20., 0., 0.)); 
+	M = scale(M, vec3(3.f, 3.f, 3.f));
+	VM = m_mVM * M;
+	PVM = m_mPVM * M;
+
+	glUniformMatrix4fv(m_nPVM, 1, GL_FALSE, value_ptr(PVM));
+	glUniformMatrix4fv(m_nVM, 1, GL_FALSE, value_ptr(VM));
+
+	glActiveTexture(GL_TEXTURE0);
+	glBindTexture(GL_TEXTURE_CUBE_MAP, m_cubeTex.TexName());
+
+	m_prism.RenderGL();
 }
 
 void CChildView::CleanGL()

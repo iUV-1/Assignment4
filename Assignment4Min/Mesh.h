@@ -51,4 +51,5 @@ public:
 	void ComputeSmoothNormals(void);
 	void LoadOBJ(const char* filename);
 	void CreateCube();
+	void CreateDecagonalPrism();
 };

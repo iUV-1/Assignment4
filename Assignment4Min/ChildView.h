@@ -51,6 +51,7 @@ private:
 	CSphere m_sphere;
 	CMesh m_cat;
 	CMesh m_fish;
+	CMesh m_prism;
 	CMesh m_skybox;
 };
 

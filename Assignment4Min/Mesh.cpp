@@ -245,3 +245,101 @@ void CMesh::CreateCube()
 		AddTriangleVertex(0, 1, 2);
 		AddTriangleVertex(1, 1, 3);
 }
+
+void CMesh::CreateDecagonalPrism()
+{
+	int numSides = 10;
+	float halfHeight = 1.0f;
+	float radius = 1.0f;
+	float pi = 3.1415926535f;
+
+	// Side faces
+	for (int i = 0; i < numSides; i++)
+	{
+		float a1 = i * 2.0f * pi / numSides;
+		float a2 = (i + 1) * 2.0f * pi / numSides;
+
+		glm::vec3 v1(radius * cos(a1), -halfHeight, radius * sin(a1));
+		glm::vec3 v2(radius * cos(a2), -halfHeight, radius * sin(a2));
+		glm::vec3 v3(radius * cos(a2),  halfHeight, radius * sin(a2));
+		glm::vec3 v4(radius * cos(a1),  halfHeight, radius * sin(a1));
+
+		glm::vec3 normal(cos((a1 + a2) / 2.0f), 0, sin((a1 + a2) / 2.0f));
+
+		int startIdx = m_vertices.size();
+		AddVertex(v1); AddVertex(v2); AddVertex(v3); AddVertex(v4);
+		
+		int normalIdx = m_normals.size();
+		AddNormal(normal);
+
+		int texIdx = m_tvertices.size();
+		AddTexCoord(glm::vec2((float)i / numSides, 0.0f));
+		AddTexCoord(glm::vec2((float)(i + 1) / numSides, 0.0f));
+		AddTexCoord(glm::vec2((float)(i + 1) / numSides, 1.0f));
+		AddTexCoord(glm::vec2((float)i / numSides, 1.0f));
+
+		AddTriangleVertex(startIdx, normalIdx, texIdx);
+		AddTriangleVertex(startIdx + 1, normalIdx, texIdx + 1);
+		AddTriangleVertex(startIdx + 2, normalIdx, texIdx + 2);
+
+		AddTriangleVertex(startIdx, normalIdx, texIdx);
+		AddTriangleVertex(startIdx + 2, normalIdx, texIdx + 2);
+		AddTriangleVertex(startIdx + 3, normalIdx, texIdx + 3);
+	}
+
+	// Top face
+	int topCenterIdx = m_vertices.size();
+	AddVertex(glm::vec3(0, halfHeight, 0));
+	int topNormalIdx = m_normals.size();
+	AddNormal(glm::vec3(0, 1, 0));
+	int topTexCenterIdx = m_tvertices.size();
+	AddTexCoord(glm::vec2(0.5f, 0.5f));
+
+	for (int i = 0; i < numSides; i++)
+	{
+		float a1 = i * 2.0f * pi / numSides;
+		float a2 = (i + 1) * 2.0f * pi / numSides;
+
+		glm::vec3 v1(radius * cos(a1), halfHeight, radius * sin(a1));
+		glm::vec3 v2(radius * cos(a2), halfHeight, radius * sin(a2));
+
+		int startIdx = m_vertices.size();
+		AddVertex(v1); AddVertex(v2);
+		
+		int texIdx = m_tvertices.size();
+		AddTexCoord(glm::vec2(0.5f + 0.5f * cos(a1), 0.5f + 0.5f * sin(a1)));
+		AddTexCoord(glm::vec2(0.5f + 0.5f * cos(a2), 0.5f + 0.5f * sin(a2)));
+
+		AddTriangleVertex(topCenterIdx, topNormalIdx, topTexCenterIdx);
+		AddTriangleVertex(startIdx, topNormalIdx, texIdx);
+		AddTriangleVertex(startIdx + 1, topNormalIdx, texIdx + 1);
+	}
+
+	// Bottom face
+	int bottomCenterIdx = m_vertices.size();
+	AddVertex(glm::vec3(0, -halfHeight, 0));
+	int bottomNormalIdx = m_normals.size();
+	AddNormal(glm::vec3(0, -1, 0));
+	int bottomTexCenterIdx = m_tvertices.size();
+	AddTexCoord(glm::vec2(0.5f, 0.5f));
+
+	for (int i = 0; i < numSides; i++)
+	{
+		float a1 = i * 2.0f * pi / numSides;
+		float a2 = (i + 1) * 2.0f * pi / numSides;
+
+		glm::vec3 v1(radius * cos(a1), -halfHeight, radius * sin(a1));
+		glm::vec3 v2(radius * cos(a2), -halfHeight, radius * sin(a2));
+
+		int startIdx = m_vertices.size();
+		AddVertex(v1); AddVertex(v2);
+		
+		int texIdx = m_tvertices.size();
+		AddTexCoord(glm::vec2(0.5f + 0.5f * cos(a1), 0.5f + 0.5f * sin(a1)));
+		AddTexCoord(glm::vec2(0.5f + 0.5f * cos(a2), 0.5f + 0.5f * sin(a2)));
+
+		AddTriangleVertex(bottomCenterIdx, bottomNormalIdx, bottomTexCenterIdx);
+		AddTriangleVertex(startIdx + 1, bottomNormalIdx, texIdx + 1);
+		AddTriangleVertex(startIdx, bottomNormalIdx, texIdx);
+	}
+}
